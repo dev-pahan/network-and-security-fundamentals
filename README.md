@@ -10,7 +10,7 @@ I use this repo to record the tools, configurations, and experiments that help m
 - **Nmap** – network and service scanning  
 - **Wireshark** – packet capture and protocol inspection  
 - **Linux Firewalls (iptables / nftables)** – packet filtering, NAT, and custom rule sets  
-- **OpenSSH** – secure remote access and key-based authentication setup  
+- **OpenSSH (with Google Authenticator MFA)** – secure remote access and multi-factor authentication setup
 - **Cowrie Honeypot** – simulating SSH attacks and analyzing malicious activity  
 - **Encryption Methods** – symmetric & asymmetric cryptography (AES, RSA)  
 - **Log Analysis** – reviewing system, firewall, and honeypot logs for anomalies  
@@ -46,14 +46,38 @@ I use this repo to record the tools, configurations, and experiments that help m
   ```
   - Understood rule chains, persistence, and NAT translation.
 
-### 🔹 3. Secure Remote Access with OpenSSH
-  - Installed and configured an OpenSSH server on Ubuntu.
+### 🔹 3. Secure Remote Access with OpenSSH (with MFA)
+
+  - Installed and configured an OpenSSH server on Ubuntu for secure remote access.
   
-  - Implemented key-based authentication and disabled password logins.
+  - Implemented key-based authentication and integrated Google Authenticator MFA for an additional security layer.
+  Steps included:
   
-  - Monitored /var/log/auth.log for failed login attempts and brute-force activity.
+  1. Installed the PAM module for Google Authenticator:
+  ```
+  sudo apt install libpam-google-authenticator
+  ```
   
-  - Tested access control by allowing specific IP ranges only.
+  2. Enabled MFA per user:
+  ```
+  google-authenticator
+  ```
+  
+  3. Updated the PAM config at /etc/pam.d/sshd:
+  ```
+  auth required pam_google_authenticator.so
+  ```
+  
+  4. Edited /etc/ssh/sshd_config to allow both public key and MFA:
+  ```
+  ChallengeResponseAuthentication yes
+  AuthenticationMethods publickey,keyboard-interactive
+  ```
+  
+  5. Restarted SSH and tested login using a one-time MFA code.
+  
+  Monitored /var/log/auth.log for failed logins, brute-force attempts, and MFA validation.
+  Restricted SSH access to specific IP ranges for better control.
 
 ### 🔹 4. Cowrie Honeypot Deployment & Log Analysis
   - Deployed a Cowrie SSH honeypot to observe attacker interactions.
